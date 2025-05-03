@@ -1,4 +1,5 @@
 use rand::Rng;
+use rand::thread_rng;
 use std::f64::consts::PI;
 use geo::{Line, Polygon, Point, Contains};
 use geo::line_intersection::{line_intersection, LineIntersection};
@@ -13,76 +14,55 @@ fn generate_polygon_points(n: usize) -> Vec<(f64, f64)> {
     }).collect()
 }
 
-fn edges_are_geometrically_distinct(
-    p1: (f64, f64), p2: (f64, f64),
-    q1: (f64, f64), q2: (f64, f64)
-) -> bool {
-    let edge1_dx = p2.0 - p1.0;
-    let edge1_dy = p2.1 - p1.1;
-    
-    let edge2_dx = q2.0 - q1.0;
-    let edge2_dy = q2.1 - q1.1;
-    
-    let cross = edge1_dx * edge2_dy - edge1_dy * edge2_dx;
-    
-    cross.abs() > f64::EPSILON
-}
-
 fn generate_random_points_on_edges(
-    points: &[(f64, f64)], 
-    num_pairs: usize
-) -> (Vec<(f64, f64)>, Vec<(f64, f64)>, Vec<(usize, usize)>) {
-    let mut rng = rand::thread_rng();
+    points: &[(f64, f64)],
+) -> (Vec<(f64, f64)>, Vec<(f64, f64)>) {
+    let mut rng = thread_rng();
     let n = points.len();
-    let mut first_points = Vec::new();
-    let mut second_points = Vec::new();
-    let mut edge_indices = Vec::new();
+    
+    let mut first_points = Vec::with_capacity(2);
+    let mut second_points = Vec::with_capacity(2);
+    
+    for _ in 0..2 {
 
-    let valid_edges: Vec<usize> = (0..n)
-        .filter(|&i| {
-            let p1 = points[i];
-            let p2 = points[(i + 1) % n];
-            (p1.0 - p2.0).abs() > f64::EPSILON || (p1.1 - p2.1).abs() > f64::EPSILON
-        })
-        .collect();
+        let edge1_index = rng.gen_range(0..n);
 
-    if valid_edges.len() < 2 {
-        panic!("Polygon must have at least 2 valid edges");
-    }
-
-    for _ in 0..num_pairs {
-        let idx1 = rng.gen_range(0..valid_edges.len());
-        let edge1 = valid_edges[idx1];
-        let (p1_start, p1_end) = (points[edge1], points[(edge1 + 1) % n]);
-        
-        let mut idx2 = rng.gen_range(0..valid_edges.len());
+        let mut edge2_index;
         loop {
-            let candidate_edge = valid_edges[idx2];
-            let (p2_start, p2_end) = (points[candidate_edge], points[(candidate_edge + 1) % n]);
-            
-            if edges_are_geometrically_distinct(p1_start, p1_end, p2_start, p2_end) {
+            edge2_index = rng.gen_range(0..n);
+            if edge2_index != edge1_index {
                 break;
             }
-            idx2 = rng.gen_range(0..valid_edges.len());
         }
-        let edge2 = valid_edges[idx2];
-        let (p2_start, p2_end) = (points[edge2], points[(edge2 + 1) % n]);
-
-        let t1: f64 = rng.gen();
-        let x1 = p1_start.0 + t1 * (p1_end.0 - p1_start.0);
-        let y1 = p1_start.1 + t1 * (p1_end.1 - p1_start.1);
-
-        let t2: f64 = rng.gen();
-        let x2 = p2_start.0 + t2 * (p2_end.0 - p2_start.0);
-        let y2 = p2_start.1 + t2 * (p2_end.1 - p2_start.1);
-
-        first_points.push((x1, y1));
-        second_points.push((x2, y2));
-        edge_indices.push((edge1, edge2));
+        
+        let edge1_start = points[edge1_index];
+        let edge1_end = points[(edge1_index + 1) % n];
+        
+        let edge2_start = points[edge2_index];
+        let edge2_end = points[(edge2_index + 1) % n];
+        
+        let point1 = random_point_on_edge(edge1_start, edge1_end, &mut rng);
+        let point2 = random_point_on_edge(edge2_start, edge2_end, &mut rng);
+        
+        first_points.push(point1);
+        second_points.push(point2);
     }
-
-    (first_points, second_points, edge_indices)
+    
+    (first_points, second_points)
 }
+
+fn random_point_on_edge(
+    start: (f64, f64),
+    end: (f64, f64),
+    rng: &mut impl Rng
+) -> (f64, f64) {
+    let t: f64 = rng.gen();
+    (
+        start.0 + t * (end.0 - start.0),
+        start.1 + t * (end.1 - start.1),
+    )
+}
+
 
 fn is_intersect(
     seg1: &[(f64, f64)],
@@ -121,18 +101,17 @@ fn main() {
     let n = 4;
     let points = generate_polygon_points(n);
     let num_pairs = 2;
-    let (first_points, second_points, edge_indices) = generate_random_points_on_edges(&points, num_pairs);
+    let (first_points, second_points) = generate_random_points_on_edges(&points);
 
     println!("Polygon Points:");
     println!("polygon({:?})", points.iter().map(|(x,y)| format!("({:.6},{:.6})", x, y)).collect::<Vec<_>>().join(","));
 
     println!("\nPoint Pairs (Desmos format):");
     for i in 0..num_pairs {
-        println!("Pair {}: polygon(({:.6},{:.6}),({:.6},{:.6})) on edges {:?}",
+        println!("Pair {}: polygon(({:.6},{:.6}),({:.6},{:.6}))",
             i+1,
             first_points[i].0, first_points[i].1,
             second_points[i].0, second_points[i].1,
-            edge_indices[i]
         );
     }
 
