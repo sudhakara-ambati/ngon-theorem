@@ -4,7 +4,7 @@ use std::time::Instant;
 use geo::{Line, Polygon, Point, Contains};
 use geo::line_intersection::{line_intersection, LineIntersection};
 use rayon::prelude::*;
-use rust_xlsxwriter::{Workbook, Format};
+use rust_xlsxwriter::{Workbook};
 
 fn generate_polygon_points(n: usize) -> Vec<(f64, f64)> {
     let angle_step = 2.0 * PI / n as f64;
@@ -103,7 +103,7 @@ fn main() {
     let iterations: i64 = 100_000_000;
     let mut row = 1;
     
-    for n in 3..=5000 {
+    for n in 3..=2500 {
         println!("Processing n = {}", n);
         let start_time = Instant::now();
         
