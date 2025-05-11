@@ -26,11 +26,11 @@ This project uses **Monte Carlo simulation** to estimate the probability that tw
 
 The project demonstrates that as the number of sides of a regular polygon increases, the probability of line segment intersection approaches **1/3**. The relationship follows the equation:
 
-\[
-y = 1/3 + 1/(3-3x) + 1/x
-\]
+$$
+y = \frac{1}{3} + \frac{1}{3 - 3n} + \frac{1}{n}
+$$
 
-Where `x` is the number of sides of the polygon and `y` is the probability of intersection.
+Where `n` is the number of sides of the polygon and `y` is the probability of intersection.
 
 ---
 
