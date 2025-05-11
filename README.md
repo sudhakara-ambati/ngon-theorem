@@ -1,5 +1,3 @@
-Here’s a rewritten version of your content in a clean and structured format that you can directly copy and paste:
-
 ---
 
 # Monte Carlo Polygon Intersection Simulator
