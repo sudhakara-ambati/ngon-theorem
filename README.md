@@ -79,11 +79,13 @@ For each number of sides (`n = 3 to 500`):
 3. For each iteration:
    - Select two random line segments within the polygon.
    - Check if they intersect within the polygon's interior.
-4. **Calculate** the probability as:
-   \[
-   \text{Probability} = \frac{\text{Number of Intersections}}{\text{Total Iterations}}
-   \]
-5. **Record** the result with confidence intervals.
+4. Calculate the probability as:
+   
+$$
+\text{Probability} = \frac{\text{Number of Intersections}}{\text{Total Iterations}}
+$$
+
+7. **Record** the result with confidence intervals.
 
 ---
 
